@@ -38,6 +38,36 @@ def test_private_template_parameters_are_regional() -> None:
     assert "param vnetAddressPrefix = '10.19.0.0/16'" in parameters
 
 
+def test_databricks_nsg_uses_the_vnet_location() -> None:
+    vnet = executable_bicep(
+        ROOT
+        / "deployment"
+        / "template-19"
+        / "modules-network-secured"
+        / "vnet.bicep"
+    )
+    parameters = (ROOT / "deployment" / "food-analytics.bicepparam").read_text(
+        encoding="utf-8"
+    )
+
+    assert "resource databricksNsg 'Microsoft.Network/networkSecurityGroups@" in vnet
+    assert "location: location" in vnet
+    assert "id: effectiveDatabricksNsgId" in vnet
+    assert "readEnvironmentVariable('DATABRICKS_NSG_ID', '')" in parameters
+
+
+def test_subscription_initializer_registers_required_providers() -> None:
+    script = executable_powershell(
+        ROOT / "deployment" / "Initialize-Subscription.ps1"
+    )
+
+    assert "'Microsoft.App'" in script
+    assert "'Microsoft.ContainerService'" in script
+    assert "az provider register" in script
+    assert "--wait" in script
+    assert "az provider show" in script
+
+
 def test_azd_manifest_cannot_provision_public_foundry() -> None:
     manifest = (ROOT / "azure.yaml").read_text(encoding="utf-8")
 

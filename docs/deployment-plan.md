@@ -15,7 +15,7 @@ Target: the subscription, resource group and region in `deployment/environment.j
 | Genie space ID | `foundry-connections.bicep`, `environment.json` | **Done** — created by `create-genie-space.ps1` |
 | Databricks credential | — | **Not required** — managed identity throughout |
 | In-VNet client | toolbox, agent deploy, demo | **Done** — `vm-jumpbox` |
-| Databricks NSG resource ID | `food-analytics.bicepparam` via `DATABRICKS_NSG_ID` | Set before any template redeploy |
+| Databricks NSG | `food-analytics.bicepparam` | Created in the VNet region; `DATABRICKS_NSG_ID` optionally reuses an existing same-region NSG |
 
 ### Why there is no Databricks secret
 
@@ -67,7 +67,12 @@ grant dump taken from an unprivileged identity looks alarmingly empty.
   Owner does not include Foundry data actions.
 - Providers registered: `Microsoft.CognitiveServices`, `Microsoft.DocumentDB`, `Microsoft.Search`,
   `Microsoft.Network`, `Microsoft.App`, `Microsoft.ContainerRegistry`, `Microsoft.KeyVault`,
-  `Microsoft.Databricks`, `Microsoft.Compute`.
+  `Microsoft.Databricks`, `Microsoft.Compute`, `Microsoft.ContainerService`, `Microsoft.Storage`.
+  Run `deployment/Initialize-Subscription.ps1` to register and verify the complete list in the
+  subscription selected by `deployment/environment.json`.
+- The Databricks NSG is created by the VNet module with the same `location` parameter as the VNet.
+  If `DATABRICKS_NSG_ID` is set to reuse an existing NSG, confirm that NSG is in the deployment
+  region before running the template.
 - `az bicep build` is clean for `deployment/food-analytics.bicepparam`,
   `deployment/databricks-private-link.bicep`, `deployment/foundry-connections.bicep` and
   `deployment/jumpbox.bicep`.

@@ -47,7 +47,7 @@ param databricksHostSubnetPrefix string = ''
 @description('Address prefix for the Databricks container (private) subnet.')
 param databricksContainerSubnetPrefix string = ''
 
-@description('Resource ID of the NSG to attach to the Databricks subnets. Required when Databricks subnets are created.')
+@description('Optional resource ID of an existing NSG to attach to the Databricks subnets. When empty, an NSG is created in the VNet location.')
 param databricksNsgId string = ''
 
 var defaultVnetAddressPrefix = '192.168.0.0/16'
@@ -56,6 +56,13 @@ var agentSubnet = empty(agentSubnetPrefix) ? cidrSubnet(vnetAddress, 24, 0) : ag
 var peSubnet = empty(peSubnetPrefix) ? cidrSubnet(vnetAddress, 24, 1) : peSubnetPrefix
 var mcpSubnet = empty(mcpSubnetPrefix) ? cidrSubnet(vnetAddress, 24, 2) : mcpSubnetPrefix
 var deployDatabricksSubnets = !empty(databricksHostSubnetPrefix) && !empty(databricksContainerSubnetPrefix)
+var createDatabricksNsg = deployDatabricksSubnets && empty(databricksNsgId)
+var effectiveDatabricksNsgId = createDatabricksNsg ? databricksNsg!.id : databricksNsgId
+
+resource databricksNsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' = if (createDatabricksNsg) {
+  name: 'nsg-databricks'
+  location: location
+}
 
 var databricksSubnets = deployDatabricksSubnets ? [
   {
@@ -63,7 +70,7 @@ var databricksSubnets = deployDatabricksSubnets ? [
     properties: {
       addressPrefix: databricksHostSubnetPrefix
       networkSecurityGroup: {
-        id: databricksNsgId
+        id: effectiveDatabricksNsgId
       }
       delegations: [
         {
@@ -80,7 +87,7 @@ var databricksSubnets = deployDatabricksSubnets ? [
     properties: {
       addressPrefix: databricksContainerSubnetPrefix
       networkSecurityGroup: {
-        id: databricksNsgId
+        id: effectiveDatabricksNsgId
       }
       delegations: [
         {

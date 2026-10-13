@@ -40,7 +40,7 @@ param databricksHostSubnetPrefix string = ''
 @description('Address prefix for the Databricks container (private) subnet.')
 param databricksContainerSubnetPrefix string = ''
 
-@description('Resource ID of an existing NSG to attach to the Databricks subnets.')
+@description('Optional resource ID of an existing NSG to attach to the Databricks subnets. When empty, the VNet module creates one in the VNet location.')
 param databricksNsgId string = ''
 
 @description('Set to true to reference the agent subnet as existing (do not create or modify it)')

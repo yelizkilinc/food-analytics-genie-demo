@@ -25,9 +25,9 @@ param mcpSubnetPrefix = '10.19.2.0/24'
 // Databricks VNet injection. Both subnets are permanent for the life of the workspace.
 param databricksHostSubnetPrefix = '10.19.3.0/24'
 param databricksContainerSubnetPrefix = '10.19.4.0/24'
-// Required, with no default: an empty value would detach the NSG from the Databricks
-// subnets on redeploy. Set DATABRICKS_NSG_ID to the NSG's full resource ID first.
-param databricksNsgId = readEnvironmentVariable('DATABRICKS_NSG_ID')
+// The template creates nsg-databricks in the VNet location by default. Set
+// DATABRICKS_NSG_ID only when reusing an existing NSG in that same region.
+param databricksNsgId = readEnvironmentVariable('DATABRICKS_NSG_ID', '')
 
 // Required by the vendored template. Left empty: no Fabric workspace is in scope.
 param existingFabricWorkspaceResourceId = ''

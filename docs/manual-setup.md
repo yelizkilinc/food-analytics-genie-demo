@@ -10,7 +10,7 @@ PowerShell 7 with the Azure CLI signed in to the target tenant.
 
 | # | Manual step | Needed before README step |
 |---|---|---|
-| A | [Create the Databricks NSG](#a-create-the-databricks-nsg) | 2 |
+| A | [Reuse an existing Databricks NSG](#a-reuse-an-existing-databricks-nsg) (optional) | 2 |
 | B | [Confirm the Unity Catalog metastore](#b-confirm-the-unity-catalog-metastore) | 3 |
 | C | [Create the storage credential and external location](#c-create-the-storage-credential-and-external-location) | 3 |
 | D | [Create the Pro SQL warehouse](#d-create-the-pro-sql-warehouse) | 3 |
@@ -44,21 +44,23 @@ first-party app, so it is the same in every tenant.
 
 ---
 
-## A. Create the Databricks NSG
+## A. Reuse an existing Databricks NSG
 
-Template 19 attaches an **existing** network security group to the two Databricks subnets.
-It does not create one, so create an empty NSG first. Databricks adds the rules it needs
-when the workspace is deployed.
+By default, Template 19 creates `nsg-databricks` in the same region as the VNet and attaches it
+to both Databricks subnets. Databricks adds the rules it needs when the workspace is deployed.
+
+To reuse an existing NSG, first verify that its location matches the deployment location:
 
 ```powershell
-az group create -n <ResourceGroup> -l <Location>
-az network nsg create -g <ResourceGroup> -n nsg-databricks -l <Location>
-$env:DATABRICKS_NSG_ID = az network nsg show -g <ResourceGroup> -n nsg-databricks --query id -o tsv
+$nsg = az network nsg show -g <ResourceGroup> -n <NsgName> | ConvertFrom-Json
+if ($nsg.location -ne '<Location>') {
+    throw "NSG location '$($nsg.location)' must match VNet location '<Location>'."
+}
+$env:DATABRICKS_NSG_ID = $nsg.id
 ```
 
-`deployment/food-analytics.bicepparam` reads `DATABRICKS_NSG_ID` and fails if it is missing.
-That is deliberate: an empty value would detach the NSG from the Databricks subnets on a
-redeploy. Set the variable in every shell you deploy Template 19 from.
+`deployment/food-analytics.bicepparam` reads `DATABRICKS_NSG_ID` when it is set. Leave it unset
+to let the template create and manage the correctly located NSG.
 
 ## B. Confirm the Unity Catalog metastore
 

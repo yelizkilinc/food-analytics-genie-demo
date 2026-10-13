@@ -149,7 +149,8 @@ with placeholders.
   100K TPM; 10K TPM ran out during a three-question rehearsal).
 - Resource providers registered: `Microsoft.CognitiveServices`, `Microsoft.DocumentDB`,
   `Microsoft.Search`, `Microsoft.Network`, `Microsoft.App`, `Microsoft.ContainerRegistry`,
-  `Microsoft.KeyVault`, `Microsoft.Databricks`, `Microsoft.Compute`.
+  `Microsoft.ContainerService`, `Microsoft.KeyVault`, `Microsoft.Databricks`,
+  `Microsoft.Compute`, `Microsoft.Storage`.
 - Tools: Azure CLI with Bicep, Azure Developer CLI `>= 1.27.1`, PowerShell 7, Python 3.13.
 
 ```powershell
@@ -169,20 +170,28 @@ Fill in the subscription, resource group, region and jumpbox name now. The remai
 (Foundry names, workspace URL, warehouse ID, Genie space ID, identity client IDs) are filled
 in as the steps below create them. Scripts refuse to run while a `<placeholder>` remains.
 
+Register and verify all providers used by the sample. This includes `Microsoft.App`, which is
+required for the Container Apps subnet delegations, and `Microsoft.ContainerService`:
+
+```powershell
+./deployment/Initialize-Subscription.ps1
+```
+
 ### 2. Network, Foundry and model (Template 19)
 
-Create the resource group and an empty NSG for the Databricks subnets
-([manual step A](docs/manual-setup.md#a-create-the-databricks-nsg)), then deploy the
-private Foundry account, project, `gpt-5.1` deployment, VNet, subnets and private endpoints:
+Create the resource group, then deploy the private Foundry account, project, `gpt-5.1`
+deployment, VNet, subnets and private endpoints:
 
 ```powershell
 az group create -n <resource-group> -l <region>
-az network nsg create -g <resource-group> -n nsg-databricks -l <region>
-$env:DATABRICKS_NSG_ID = az network nsg show -g <resource-group> -n nsg-databricks --query id -o tsv
 
 az deployment group what-if -g <resource-group> --parameters deployment/food-analytics.bicepparam
 az deployment group create  -g <resource-group> --parameters deployment/food-analytics.bicepparam
 ```
+
+The template creates `nsg-databricks` with the same `location` parameter as the VNet, so the
+NSG and its Databricks subnets cannot drift across regions. To reuse an existing NSG instead,
+follow [manual step A](docs/manual-setup.md#a-reuse-an-existing-databricks-nsg).
 
 Review the `what-if` output before every `create`. Two warnings from the vendored template
 (`BCP037`, `BCP321`) are upstream and expected.

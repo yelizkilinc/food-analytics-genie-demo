@@ -43,7 +43,9 @@ external access.
 ### `modules-network-secured/vnet.bicep`, `modules-network-secured/network-agent-vnet.bicep`, `main.bicep`
 
 Added two extra subnets for Databricks VNet injection — a host subnet and a container subnet, each
-delegated to `Microsoft.Databricks/workspaces` with a shared NSG. Upstream ships three subnets and
+delegated to `Microsoft.Databricks/workspaces` with a shared NSG. When no existing NSG resource ID
+is supplied, `vnet.bicep` creates `nsg-databricks` from the same `location` parameter as the VNet,
+which guarantees that the NSG and subnets are in the same region. Upstream ships three subnets and
 has no concept of Databricks.
 
 The parameters must be threaded through **all three** files. `main.bicep` does not call `vnet.bicep`

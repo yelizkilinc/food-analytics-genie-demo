@@ -116,7 +116,7 @@ param databricksHostSubnetPrefix string = ''
 @description('Address prefix for the Databricks container (private) subnet.')
 param databricksContainerSubnetPrefix string = ''
 
-@description('Resource ID of an existing NSG to attach to the Databricks subnets.')
+@description('Optional resource ID of an existing NSG to attach to the Databricks subnets. When empty, an NSG is created in the VNet location.')
 param databricksNsgId string = ''
 
 @description('Optional ARM Resource ID of an existing agent subnet. If provided, the subnet will be referenced as-is and will not be created/modified.')
