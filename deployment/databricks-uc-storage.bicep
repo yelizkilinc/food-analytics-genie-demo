@@ -104,6 +104,10 @@ resource accessConnectorSelfReader 'Microsoft.Authorization/roleAssignments@2022
 }
 
 // The blob zone already exists from template-19; only the dfs zone is new.
+resource blobDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  name: blobDnsZoneName
+}
+
 resource dfsDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: dfsDnsZoneName
   location: 'global'
@@ -151,6 +155,42 @@ resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
         name: 'dfs'
         properties: {
           privateDnsZoneId: dfsDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+resource storageBlobPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
+  name: '${storageAccountName}-blob-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: virtualNetwork::peSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'blob'
+        properties: {
+          privateLinkServiceId: storage.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource storageBlobDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
+  parent: storageBlobPrivateEndpoint
+  name: 'blob-dns-group'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'blob'
+        properties: {
+          privateDnsZoneId: blobDnsZone.id
         }
       }
     ]

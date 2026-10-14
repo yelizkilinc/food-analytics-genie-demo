@@ -1,7 +1,6 @@
 <#
 .SYNOPSIS
-    Creates the shared views that both Power BI and Genie read, and repoints the Genie
-    space at them. Runs on the jumpbox.
+    Creates the shared views that both Power BI and Genie read. Runs on the jumpbox.
 
 .DESCRIPTION
     The demo claim is that the agent returns the same number as the BI dashboard. That
@@ -22,7 +21,7 @@
 param(
     [Parameter(Mandatory)] [string] $WorkspaceUrl,
     [Parameter(Mandatory)] [string] $WarehouseId,
-    [Parameter(Mandatory)] [string] $GenieSpaceId,
+    [string] $GenieSpaceId,
     # Client ID of the jumpbox managed identity as registered in Databricks.
     [Parameter(Mandatory)] [string] $JumpboxIdentityId
 )
@@ -31,7 +30,6 @@ $ErrorActionPreference = 'Continue'
 
 $workspace = $WorkspaceUrl
 $warehouseId = $WarehouseId
-$spaceId = $GenieSpaceId
 $catalog = 'food_analytics'
 $schema = 'gold'
 

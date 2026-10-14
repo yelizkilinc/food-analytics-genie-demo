@@ -45,6 +45,7 @@ $include = @(
     'agent/requirements.txt',
     'agent/.agentignore'
 )
+# *** These provide the deployment configuration, your Python agent code, its dependencies, and packaging exclusions.
 
 $staging = Join-Path ([System.IO.Path]::GetTempPath()) "jb-stage-$([guid]::NewGuid())"
 $zipPath = Join-Path ([System.IO.Path]::GetTempPath()) "jb-payload-$([guid]::NewGuid()).zip"
@@ -68,6 +69,7 @@ try {
 
     Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $zipPath -Force
     $payload = [Convert]::ToBase64String([IO.File]::ReadAllBytes($zipPath))
+    
     Write-Host "Payload: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB"
 
     $deployLine = if ($ToolboxOnly) {

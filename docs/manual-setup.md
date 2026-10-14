@@ -25,6 +25,11 @@ Steps C to H call the Databricks API or UI from your workstation, so they **must
 finished while the workspace still has public network access enabled** (README step 3).
 After lockdown (step 9), only the jumpbox can reach the workspace.
 
+For first-time setup, omit `GenieSpaceId` from `deployment/environment.json` until
+`create-genie-space.ps1` prints the real ID. The environment loader rejects placeholder
+values even for scripts that do not use them. Create the shared views before creating
+the Genie space; the views script does not require an existing space ID.
+
 A helper used by several steps below. It gets an Entra token for Azure Databricks and calls the
 workspace REST API:
 
@@ -82,6 +87,10 @@ those privileges first.
 `databricks-uc-storage.bicep` created a private ADLS Gen2 account, a `unity-catalog`
 container and an Access Connector with **Storage Blob Data Contributor** on it. Unity
 Catalog now needs to be told about them.
+
+The storage template creates both DFS and Blob private endpoints. Both storage
+hostnames must resolve to private addresses from the Databricks VNet; the existing
+Blob private DNS zone comes from Template 19.
 
 Get the IDs from the deployment outputs:
 

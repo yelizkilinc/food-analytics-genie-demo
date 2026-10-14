@@ -31,10 +31,10 @@ def test_private_template_parameters_are_regional() -> None:
         encoding="utf-8"
     )
 
-    assert "param location = 'swedencentral'" in parameters
+    assert "param location = 'francecentral'" in parameters
     assert "param modelName = 'gpt-5.1'" in parameters
     assert "param modelVersion = '2025-11-13'" in parameters
-    assert "param modelSkuName = 'Standard'" in parameters
+    assert "param modelSkuName = 'GlobalStandard'" in parameters
     assert "param vnetAddressPrefix = '10.19.0.0/16'" in parameters
 
 
@@ -65,6 +65,23 @@ def test_databricks_is_reached_privately_with_no_public_fallback() -> None:
     # Keep the workspace ID required so a missing value fails the deployment instead of going public.
     assert "@minLength(1)" in module
     assert "param databricksWorkspaceResourceId string =" not in module
+
+
+def test_uc_storage_has_both_private_storage_endpoints() -> None:
+    module = executable_bicep(ROOT / "deployment" / "databricks-uc-storage.bicep")
+
+    assert "publicNetworkAccess: 'Disabled'" in module
+    for subresource in ("dfs", "blob"):
+        assert re.search(rf"groupIds:\s*\[\s*'{subresource}'\s*\]", module)
+    assert "privateDnsZoneId: dfsDnsZone.id" in module
+    assert "privateDnsZoneId: blobDnsZone.id" in module
+
+
+def test_shared_views_can_be_created_before_the_genie_space() -> None:
+    script = executable_powershell(ROOT / "deployment" / "jumpbox-create-shared-views.ps1")
+
+    assert "[Parameter(Mandatory)] [string] $GenieSpaceId" not in script
+    assert "$spaceId = $GenieSpaceId" not in script
 
 
 def test_genie_connection_uses_managed_identity_and_the_guid_audience() -> None:

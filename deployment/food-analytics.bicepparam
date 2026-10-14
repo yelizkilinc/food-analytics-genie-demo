@@ -1,6 +1,6 @@
 using './template-19/main.bicep'
 
-param location = 'swedencentral'
+param location = 'francecentral'
 // Derived names append a 4-char suffix plus a resource word; storage caps at 24 chars.
 param aiServices = 'foodgenie'
 param firstProjectName = 'food-analytics-genie'
@@ -10,7 +10,7 @@ param displayName = 'Food Analytics Genie'
 param modelName = 'gpt-5.1'
 param modelFormat = 'OpenAI'
 param modelVersion = '2025-11-13'
-param modelSkuName = 'Standard'
+param modelSkuName = 'GlobalStandard'
 param modelCapacity = 100
 
 param vnetName = 'vnet-food-analytics-genie-swc'
